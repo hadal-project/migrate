@@ -10,8 +10,8 @@ import (
 
 	nebula "github.com/vesoft-inc/nebula-go/v3"
 
-	"github.com/golang-migrate/migrate/v4"
-	"github.com/golang-migrate/migrate/v4/database"
+	"github.com/hadal-project/migrate/v4"
+	"github.com/hadal-project/migrate/v4/database"
 )
 
 const (

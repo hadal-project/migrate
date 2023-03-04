@@ -1,4 +1,6 @@
-module github.com/golang-migrate/migrate/v4
+module github.com/hadal-project/migrate/v4
+
+go 1.18
 
 require (
 	cloud.google.com/go/spanner v1.40.0
@@ -30,6 +32,7 @@ require (
 	github.com/neo4j/neo4j-go-driver v1.8.1-0.20200803113522-b626aa943eba
 	github.com/snowflakedb/gosnowflake v1.6.3
 	github.com/stretchr/testify v1.7.1
+	github.com/vesoft-inc/nebula-go/v3 v3.4.0
 	github.com/xanzy/go-gitlab v0.15.0
 	go.mongodb.org/mongo-driver v1.7.0
 	go.uber.org/atomic v1.7.0
@@ -126,7 +129,6 @@ require (
 	github.com/remyoudompheng/bigfft v0.0.0-20200410134404-eec4a21b6bb0 // indirect
 	github.com/shopspring/decimal v1.2.0 // indirect
 	github.com/sirupsen/logrus v1.9.0 // indirect
-	github.com/vesoft-inc/nebula-go/v3 v3.4.0 // indirect
 	github.com/xdg-go/pbkdf2 v1.0.0 // indirect
 	github.com/xdg-go/scram v1.0.2 // indirect
 	github.com/xdg-go/stringprep v1.0.2 // indirect
@@ -164,5 +166,3 @@ require (
 	modernc.org/token v1.0.0 // indirect
 	modernc.org/zappy v1.0.0 // indirect
 )
-
-go 1.18
