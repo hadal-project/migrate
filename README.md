@@ -17,7 +17,15 @@ __Database migrations written in Go. Use as [CLI](#cli-usage) or import as [libr
    (Keeps the drivers lightweight, too.)
 * Database drivers don't assume things or try to correct user input. When in doubt, fail.
 
-Forked from [mattes/migrate](https://github.com/mattes/migrate)
+___
+
+## NOTE
+
+This is a fork from [golang-migrate/migrate](https://github.com/golang-migrate/migrate) with [Nebula Graph DB](https://www.nebula-graph.io/) migrations implemented.
+
+Visit [Nebula migrations](database/nebula) page for more details
+
+___
 
 ## Databases
 
@@ -32,6 +40,7 @@ Database drivers run migrations. [Add a new database?](database/driver.go)
 * [SQLite3](database/sqlite3) ([todo #165](https://github.com/mattes/migrate/issues/165))
 * [SQLCipher](database/sqlcipher)
 * [MySQL/ MariaDB](database/mysql)
+* [Nebula](database/nebula)
 * [Neo4j](database/neo4j)
 * [MongoDB](database/mongodb)
 * [CrateDB](database/crate) ([todo #170](https://github.com/mattes/migrate/issues/170))
