@@ -6,15 +6,16 @@ import (
 	sqldriver "database/sql/driver"
 	"fmt"
 	"log"
+	"net/url"
 	"testing"
 
-	_ "github.com/ClickHouse/clickhouse-go"
+	_ "github.com/ClickHouse/clickhouse-go/v2"
 	"github.com/dhui/dktest"
-	"github.com/golang-migrate/migrate/v4"
-	"github.com/golang-migrate/migrate/v4/database/clickhouse"
-	dt "github.com/golang-migrate/migrate/v4/database/testing"
-	"github.com/golang-migrate/migrate/v4/dktesting"
-	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"github.com/hadal-project/migrate/v4"
+	"github.com/hadal-project/migrate/v4/database/clickhouse"
+	dt "github.com/hadal-project/migrate/v4/database/testing"
+	"github.com/hadal-project/migrate/v4/dktesting"
+	_ "github.com/hadal-project/migrate/v4/source/file"
 )
 
 const defaultPort = 9000
@@ -33,12 +34,12 @@ var (
 func clickhouseConnectionString(host, port, engine string) string {
 	if engine != "" {
 		return fmt.Sprintf(
-			"clickhouse://%v:%v?username=user&password=password&database=db&x-multi-statement=true&x-migrations-table-engine=%v&debug=false",
+			"clickhouse://user:password@%v:%v/db?x-multi-statement=true&x-migrations-table-engine=%v&debug=false",
 			host, port, engine)
 	}
 
 	return fmt.Sprintf(
-		"clickhouse://%v:%v?username=user&password=password&database=db&x-multi-statement=true&debug=false",
+		"clickhouse://user:password@%v:%v/db?x-multi-statement=true&debug=false",
 		host, port)
 }
 
@@ -47,9 +48,12 @@ func isReady(ctx context.Context, c dktest.ContainerInfo) bool {
 	if err != nil {
 		return false
 	}
-
-	db, err := sql.Open("clickhouse", clickhouseConnectionString(ip, port, ""))
-
+	purl, err := url.Parse(clickhouseConnectionString(ip, port, ""))
+	if err != nil {
+		log.Println("open error", err)
+		return false
+	}
+	db, err := sql.Open("clickhouse", migrate.FilterCustomQuery(purl).String())
 	if err != nil {
 		log.Println("open error", err)
 		return false
@@ -65,7 +69,7 @@ func isReady(ctx context.Context, c dktest.ContainerInfo) bool {
 		case sqldriver.ErrBadConn:
 			return false
 		default:
-			fmt.Println(err)
+			fmt.Println("ping: ", err)
 		}
 		return false
 	}
@@ -114,7 +118,11 @@ func testSimpleWithInstanceDefaultConfigValues(t *testing.T) {
 		}
 
 		addr := clickhouseConnectionString(ip, port, "")
-		conn, err := sql.Open("clickhouse", addr)
+		purl, err := url.Parse(addr)
+		if err != nil {
+			t.Fatal(err)
+		}
+		conn, err := sql.Open("clickhouse", migrate.FilterCustomQuery(purl).String())
 		if err != nil {
 			t.Fatal(err)
 		}

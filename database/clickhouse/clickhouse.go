@@ -11,9 +11,9 @@ import (
 
 	"go.uber.org/atomic"
 
-	"github.com/golang-migrate/migrate/v4"
-	"github.com/golang-migrate/migrate/v4/database"
-	"github.com/golang-migrate/migrate/v4/database/multistmt"
+	"github.com/hadal-project/migrate/v4"
+	"github.com/hadal-project/migrate/v4/database"
+	"github.com/hadal-project/migrate/v4/database/multistmt"
 	"github.com/hashicorp/go-multierror"
 )
 
@@ -79,6 +79,11 @@ func (ch *ClickHouse) Open(dsn string) (database.Driver, error) {
 		return nil, err
 	}
 
+	database := purl.Query().Get("database")
+	if db := strings.TrimPrefix(purl.Path, "/"); len(database) == 0 && len(db) != 0 {
+		database = db
+	}
+
 	multiStatementMaxSize := DefaultMultiStatementMaxSize
 	if s := purl.Query().Get("x-multi-statement-max-size"); len(s) > 0 {
 		multiStatementMaxSize, err = strconv.Atoi(s)
@@ -97,7 +102,7 @@ func (ch *ClickHouse) Open(dsn string) (database.Driver, error) {
 		config: &Config{
 			MigrationsTable:       purl.Query().Get("x-migrations-table"),
 			MigrationsTableEngine: migrationsTableEngine,
-			DatabaseName:          purl.Query().Get("database"),
+			DatabaseName:          database,
 			ClusterName:           purl.Query().Get("x-cluster-name"),
 			MultiStatementEnabled: purl.Query().Get("x-multi-statement") == "true",
 			MultiStatementMaxSize: multiStatementMaxSize,
@@ -192,8 +197,15 @@ func (ch *ClickHouse) SetVersion(version int, dirty bool) error {
 		return err
 	}
 
-	query := "INSERT INTO " + ch.config.MigrationsTable + " (version, dirty, sequence) VALUES (?, ?, ?)"
-	if _, err := tx.Exec(query, version, bool(dirty), time.Now().UnixNano()); err != nil {
+	// query := "INSERT INTO " + ch.config.MigrationsTable + " (version, dirty, sequence) VALUES (?, ?, ?)"
+	query := fmt.Sprintf(
+		"INSERT INTO %s (version, dirty, sequence) VALUES (%d, %d, %d)",
+		ch.config.MigrationsTable,
+		version,
+		bool(dirty),
+		time.Now().UnixNano(),
+	)
+	if _, err := tx.Exec(query); err != nil {
 		return &database.Error{OrigErr: err, Query: []byte(query)}
 	}
 
